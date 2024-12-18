@@ -1,2 +1,3 @@
-datasets/PhySAR-Seg-1
-datasets/PhySAR-Seg-2
+datasets/PhySAR-Seg-1/*
+datasets/PhySAR-Seg-2/*
+checkpoint/*
