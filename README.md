@@ -51,9 +51,17 @@ PolSAR data presents unique challenges due to its rich and complex characteristi
 ------- 
 ### Data Preparation
 
-Download the dataset (`datasets`) and place it in the main folder of your project. Then, place the corresponding `.csv` file from the dataset into your code directory.
+You can download the dataset from [Baidu NetDisk](https://pan.baidu.com/s/1srR-IhQ76u1jNRBqHmh1SQ) using the link below:
+
+- **PhySAR-Seg-1**: [Link to PhySAR-Seg-1 on Baidu NetDisk](https://pan.baidu.com/s/1_P6NeC2W3r6cQUL_KycynA)
+- **PhySAR-Seg-2**: [Link to PhySAR-Seg-2 on Baidu NetDisk](https://pan.baidu.com/s/1SHJnk5OC4YRZ4vPjU7tceQ)
+  - **Password**: Quan
+
+Download the dataset and place it in the `datasets` folder. Then, place the corresponding `.csv` file from the dataset into your code directory.
 
 ### Train for PolSAM
+
+You can download the pretrained weights for the SAM model from [checkpoint](https://pan.baidu.com/s/15t1LyIlsn56aSr4euL8sQQ).
 
 ```python
 python train.py  # To modify the parameter settings, edit the `config.py` file.
