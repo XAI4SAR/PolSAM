@@ -59,9 +59,9 @@ class FeatureExtractor(nn.Module):
 class imgtopre_prompt_encoder(nn.Module):
     def __init__(self):
         super(imgtopre_prompt_encoder, self).__init__()
-        # self.conv1 = nn.Conv2d(8, 1, kernel_size=3, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(8, 1, kernel_size=3, stride=2, padding=1)  # coarse
         # self.conv1 = nn.Conv2d(4, 1, kernel_size=3, stride=2, padding=1)
-        self.conv1 = nn.Conv2d(5, 1, kernel_size=3, stride=2, padding=1)
+        # self.conv1 = nn.Conv2d(5, 1, kernel_size=3, stride=2, padding=1)  # SF
         # self.conv1 = nn.Conv2d(6, 1, kernel_size=3, stride=2, padding=1)
         # self.conv1 = nn.Conv2d(3, 1, kernel_size=3, stride=2, padding=1)
         # self.conv1 = nn.Conv2d(1, 1, kernel_size=3, stride=2, padding=1)

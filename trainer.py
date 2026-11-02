@@ -59,6 +59,11 @@ def trainer_SAR(cfg, model, experiment_path, multimask_output, data_info, device
         b_lr = base_lr / warmup_period
     else:
         b_lr = base_lr
+
+    group = getattr(cfg, 'train_group', 'A')  # config.py 里加 cfg.train_group = 'A'
+    model.set_trainable_group(group)
+    model.count_parameters(group_name=f"Group {group}")
+
     if cfg.AdamW:
         optimizer = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=b_lr, betas=(0.9, 0.999), weight_decay=0.1)
     else:

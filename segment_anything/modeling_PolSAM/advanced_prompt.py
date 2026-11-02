@@ -281,7 +281,7 @@ class FeatureFusionModule(nn.Module):
             if m.bias is not None:
                 m.bias.data.zero_()
 
-    def forward(self, x1, x2,segfeature):
+    def forward(self, x1, x2, segfeature):
         B, C, H, W = x1.shape  # b,256,32,32
         x1 = x1.flatten(2).transpose(1, 2)  # b,32*32,256
         x2 = x2.flatten(2).transpose(1, 2)

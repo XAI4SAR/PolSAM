@@ -1,3 +1,41 @@
-datasets/PhySAR-Seg-1/*
-datasets/PhySAR-Seg-2/*
-checkpoint/*
+# Python 缓存与本地环境
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+*.ipynb
+.venv/
+venv/
+
+# 编辑器、系统文件和本地凭据
+.vscode/
+.idea/
+.DS_Store
+.env
+.env.*
+
+# 数据集原始数据与本地清单（保留论文图片和 transforms.py）
+/datasets/PhySAR-Seg-1/
+/datasets/PhySAR-Seg-2/
+*.csv
+*.npy
+*.npz
+*.mat
+*.h5
+*.hdf5
+*.tif
+*.tiff
+
+# 模型权重、训练输出和日志
+/checkpoint/
+/save_model/
+/runs/
+/wandb/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.log
+
+# 中间分析和调试文件
+/analyze_modality_gap.py
+/modality_gap_analysis/

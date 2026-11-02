@@ -370,14 +370,14 @@ class scat_indices_coarse_onehot():
         scatonehot = np.eye(self.num_classes)[self.colormap2label[colormap_indices]]
         return scatonehot
 
-csv_pathtest = r'datasets/XLCS_mydata/pauli_512test.csv'
-csv_pathtest_scat = r'datasets/XLCS_mydata/scat_512test.csv'
-csv_pathtest_scat_npy = r'datasets/XLCS_mydata/scatnpy_512test.csv'
-path_test_m6 = r'datasets/SF/pauli_scat_label_val copy.csv'
-path_test = r'datasets/SF/pauli_scat_label_val.csv'
-path_test_coarse_m6 = r'datasets/XLCS_mydata/XLCS_mydata_test copy.csv'
-path_test_coarse = r'datasets/XLCS_mydata/XLCS_mydata_test.csv'
-path_test_coarse16 = r'datasets/XLCS_mydata/XLCS_mydata_test16.csv'
+csv_pathtest = r'datasets/PhySAR-Seg-1/pauli_512test.csv'
+csv_pathtest_scat = r'datasets/PhySAR-Seg-1/scat_512test.csv'
+csv_pathtest_scat_npy = r'datasets/PhySAR-Seg-1/scatnpy_512test.csv'
+path_test_m6 = r'datasets/PhySAR-Seg-2/pauli_scat_label_val copy.csv'
+path_test = r'datasets/PhySAR-Seg-2/pauli_scat_label_val.csv'
+path_test_coarse_m6 = r'datasets/PhySAR-Seg-1/PhySAR-Seg-1_test copy.csv'
+path_test_coarse = r'datasets/PhySAR-Seg-1/PhySAR-Seg-1_test.csv'
+path_test_coarse16 = r'datasets/PhySAR-Seg-1/PhySAR-Seg-1_test16.csv'
 
 
 class Test(Dataset):

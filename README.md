@@ -1,72 +1,96 @@
+# PolSAM
 
-<div align="center">
-<h1>PolSAM </h1>
-<h3>PolSAM: Polarimetric Scattering Mechanism Informed Segment Anything Model</h3>
+**Polarimetric Scattering Mechanism Informed Segment Anything Model**
 
-Paper: ([arXiv 2412.12737](http://arxiv.org/abs/2412.12737))
+IEEE Transactions on Circuits and Systems for Video Technology (TCSVT), 2026
 
-</div>
+**Our website: [https://wanda36.github.io/PolSAM/](https://wanda36.github.io/PolSAM/)**
 
-* [**abstract**](#abstract)
-* [**datasets**](#datasets)
-* [**overview**](#overview)
-* [**getting started**](#getting-started)
-* [**citation**](#citation)
+[Journal paper](https://doi.org/10.1109/TCSVT.2026.3738868) · [arXiv](https://arxiv.org/abs/2412.12737)
 
-## Abstract
-------- 
-PolSAR data presents unique challenges due to its rich and complex characteristics. Existing data representations, such as complex-valued data, polarimetric features, and amplitude images, are widely used. However, these formats often face issues related to usability, interpretability, and data integrity. While most feature extraction networks for PolSAR attempt to address these issues, they are typically small in size, which limits their ability to effectively extract features. To overcome these limitations, we introduce the large, powerful Segment Anything Model (SAM), which excels in feature extraction and prompt-based segmentation. However, SAM's application to PolSAR is hindered by modality differences and limited integration of domain-specific knowledge. To address these challenges, we propose the Polarimetric Scattering Mechanism-Informed SAM (PolSAM), which incorporates physical scattering characteristics and a novel prompt generation strategy to enhance segmentation performance with high data efficiency. Our approach includes a new data processing pipeline that utilizes polarimetric decomposition and semantic correlations to generate Microwave Vision Data (MVD) products, which are lightweight, physically interpretable, and information-dense. We extend the basic SAM architecture with two key contributions: The Feature-Level Fusion Prompt (FFP) module merges visual tokens from the pseudo-colored SAR image and its associated MVD, enriching them with supplementary information. When combined with a dedicated adapter, it addresses modality incompatibility in the frozen SAM encoder. Additionally, we propose the Semantic-Level Fusion Prompt (SFP) module, a progressive mechanism that leverages semantic information within MVD to generate sparse and dense prompt embeddings, refining segmentation details. Experimental evaluation on the newly constructed PhySAR-Seg datasets shows that PolSAM outperforms existing SAM-based models (without MVD) and other multimodal fusion methods (with MVD). The proposed MVD enhances segmentation results by reducing data storage and inference time, outperforming other polarimetric feature representations.
+## Getting started
 
-## Datasets
-------- 
-* Data processing pipeline: unsupervised GD-Wishart classification, MVD generation through re-clustering of scattering mechanisms, and semantic annotation, illustrated with the PhySAR-Seg-1 dataset.
+### 1. Environment
 
-<p align="center">
-  <img src="datasets/paper_images/data_process.png" alt="architecture" width="90%">
-</p>
+Use a CUDA-enabled PyTorch installation compatible with your GPU and driver, together with the matching torchvision version. The repository does not currently provide a pinned dependency environment. Other packages imported by the training and evaluation code include:
 
-* Visualization of the PhySAR-Seg-1 dataset, including the pseudo-colored image, MVD, semantic label, MVD legend, and semantic legend. The white dashed lines on the pseudo-colored image divide the dataset into train, val, and test sets.
-
-<p align="center">
-  <img src="datasets/paper_images/data_PhySAR-Seg-1.png" alt="architecture" width="90%">
-</p>
-
-* Visualization of the PhySAR-Seg-2 dataset, including the pseudo-colored image, MVD, semantic label, MVD legend, and semantic legend. The white dashed lines on the pseudo-colored image divide the dataset into train and val sets.
-
-<p align="center">
-  <img src="datasets/paper_images/data_PhySAR-Seg-2.png" alt="architecture" width="90%">
-</p>
-
-**Notably, both the original large images and the divided smaller tiles of the dataset are located in the datasets/ folder.**
-
-## Overview
-------- 
-* [**PolSAM**](http://arxiv.org/abs/2412.12737) consists of a novel data product, MVD, a Feature-Level Fusion Prompt (FFP) module and a progressive Semantic-Level Fusion Prompt (SFP) module. MVD is lightweight, encapsulates physical information, and correlates with semantic information. The FFP module combines data in a trainable manner for initial integration, while the SFP module generates sparse and dense prompts through a progressive two-level information interaction, guiding the segmentation task. By leveraging domain-specific knowledge of PolSAR data, PolSAM achieves enhanced segmentation performance with high data efficiency.
-
-<p align="center">
-  <img src="datasets/paper_images/framework.png" alt="architecture" width="90%">
-</p>
-
-## Getting Started
-------- 
-### Data Preparation
-
-You can download the dataset from [Baidu NetDisk](https://pan.baidu.com/s/1srR-IhQ76u1jNRBqHmh1SQ) using the link below:
-
-- **PhySAR-Seg-1**: [Link to PhySAR-Seg-1 on Baidu NetDisk](https://pan.baidu.com/s/1_P6NeC2W3r6cQUL_KycynA)
-- **PhySAR-Seg-2**: [Link to PhySAR-Seg-2 on Baidu NetDisk](https://pan.baidu.com/s/1SHJnk5OC4YRZ4vPjU7tceQ)
-  - **Password**: Quan
-
-Download the dataset and place it in the `datasets` folder. Then, place the corresponding `.csv` file from the dataset into your code directory.
-
-### Train for PolSAM
-
-You can download the pretrained weights for the SAM model from [checkpoint](https://pan.baidu.com/s/15t1LyIlsn56aSr4euL8sQQ).
-
-```python
-python train.py  # To modify the parameter settings, edit the `config.py` file.
+```bash
+python -m pip install numpy pandas Pillow opencv-python scipy scikit-learn \
+  matplotlib seaborn imageio einops timm easydict tqdm icecream wandb
 ```
 
+### 2. Prepare datasets and SAM weights
+
+Extract the downloaded datasets into `datasets/`. The default manifest paths in `datasets/transforms.py` are:
+
+```text
+datasets/
+├── PhySAR-Seg-1/
+│   ├── PhySAR-Seg-1_train.csv
+│   ├── PhySAR-Seg-1_val.csv
+│   ├── PhySAR-Seg-1_test16.csv
+│   └── ... image / MVD / label files
+└── PhySAR-Seg-2/
+    ├── PhySAR-Seg-2_train.csv
+    ├── PhySAR-Seg-2_val.csv
+    └── ... image / MVD / label files
+```
+
+Training CSVs must have a header row and three columns in this order: **pseudo-colored image path, MVD path, semantic label path**. Update paths inside the CSVs for your machine; relative paths are resolved from the working directory. See `dataset.py` for the separate test loader format and `datasets/transforms.py` for manifest paths and label palettes.
+
+Download the [SAM pretrained weights](https://pan.baidu.com/s/15t1LyIlsn56aSr4euL8sQQ). The default ViT-B checkpoint path is:
+
+```text
+checkpoint/sam/sam_vit_b_01ec64.pth
+```
+
+### 3. Configure and train
+
+Run commands from the repository root. Edit `config.py` before starting:
+
+| Setting | Purpose |
+| :--- | :--- |
+| `dataset_name` | `coarse` for PhySAR-Seg-1; `SF` for PhySAR-Seg-2 |
+| `ckpt`, `vit_name` | Matching SAM checkpoint and encoder |
+| `device`, `n_gpu` | CUDA device index and GPU count; use `n_gpu = 1` for the workflow below |
+| `batch_size`, `max_epochs`, `base_lr` | Training budget and optimization |
+| `pt`, `adapter`, `Cnn_extra` | Model component switches |
+| `train_group` | Encoder tuning scope; implementation in `Sam.set_trainable_group` |
+| `loss` | `ce` for PhySAR-Seg-1; the paper uses focal loss for PhySAR-Seg-2 |
+| `output`, `experiment` | Output directory and experiment name |
+
+The current configuration contains local experiment settings (`experiment = 'debug'`, `train_group = 'E'`, `adapter = False`, CUDA device `3`). Review these settings before reproducing a paper experiment. Group A selects adapter/prompt parameters in the image encoder; B tunes the full image encoder; C/D/E select the last 1/2, 1/4, or 3/4 of ViT-B blocks, together with neck/prompt parameters. Other model components retain their configured trainability.
+
+```bash
+python train.py
+```
+
+Training writes `config.txt`, `evaluation.txt`, and the selected `result.pth` checkpoint to an experiment subdirectory under `save_model/` by default.
+
+### 4. Evaluate
+
+In `test.py`, set `netpath` to your trained `result.pth` and align the `torch.load(..., map_location=...)` device with your GPU. Match the model switches to the training configuration; the script currently contains a local absolute checkpoint path.
+
+```bash
+python test.py --dataset_name coarse --gpu_device 0
+```
+
+PhySAR-Seg-2 has no default test manifest (`path_test = None`); adapt the evaluation split and loader before evaluating it with `test.py`.
+
 ## Citation
-------- 
-If you find that this paper or dataset is useful for your research, please consider citing our paper.
+
+If you use PolSAM or PhySAR-Seg, please cite:
+
+```bibtex
+@article{wang2026polsam,
+  title   = {PolSAM: Polarimetric Scattering Mechanism Informed Segment Anything Model},
+  author  = {Wang, Yuqing and Huang, Zhongling and Yang, Shuxin and Tang, Hao and Qiu, Xiaolan and Han, Junwei and Zhang, Dingwen},
+  journal = {IEEE Transactions on Circuits and Systems for Video Technology},
+  year    = {2026},
+  doi     = {10.1109/TCSVT.2026.3738868}
+}
+```
+
+## Acknowledgments
+
+Built on [Segment Anything](https://github.com/facebookresearch/segment-anything). See [LICENSE](LICENSE) for the repository license.

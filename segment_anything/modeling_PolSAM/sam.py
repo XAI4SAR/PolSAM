@@ -58,11 +58,91 @@ class Sam(nn.Module):
     @property
     def device(self) -> Any:
         return self.pixel_mean.device
+
+    # 在 forward_train 定义之前插入这两个方法
+
+    def set_trainable_group(self, group: str = "A"):
+        """训练前调用一次，设置 image_encoder 可训练范围"""
+        for n, p in self.image_encoder.named_parameters():
+            if group == "A":   # 仅 Adapter + prompt
+                p.requires_grad = ("Adapter" in n or "prompt" in n or "Prompt" in n)
+            elif group == "B": # 全参微调
+                p.requires_grad = True
+            elif group == "C": # 后 1/2: blocks 6~11 + neck + prompt
+                p.requires_grad = (any(f"blocks.{i}." in n for i in range(6, 12))
+                                or "neck" in n or "prompt" in n or "Prompt" in n)
+            elif group == "D": # 后 1/4: blocks 9~11 + neck + prompt
+                p.requires_grad = (any(f"blocks.{i}." in n for i in range(9, 12))
+                                or "neck" in n or "prompt" in n or "Prompt" in n)
+            elif group == "E": # 后 3/4: blocks 3~11 + neck + prompt
+                p.requires_grad = (any(f"blocks.{i}." in n for i in range(3, 12))
+                                or "neck" in n or "prompt" in n or "Prompt" in n)
+
+    def count_parameters(self, group_name: str = ""):
+        """按子模块统计总参数量与可训练参数量"""
+        module_keys = ["image_encoder", "CNN_encoder", "CNN_extra", "advanced_prompt", "prompt_encoder", "mask_decoder"]
+        groups = {k: [] for k in module_keys}
+
+        for n, p in self.named_parameters():
+            for key in module_keys:
+                if n.startswith(key):
+                    groups[key].append(p)
+                    break
+
+        print(f"\n{'='*60}")
+        print(f"Parameter Statistics — {group_name}" if group_name else "Parameter Statistics")
+        print(f"{'Module':<20} {'Total':>12} {'Trainable':>12} {'Ratio':>8}")
+        print("-" * 60)
+        total_all, total_train = 0, 0
+        for key, params in groups.items():
+            if not params:
+                continue
+            n_all   = sum(p.numel() for p in params)
+            n_train = sum(p.numel() for p in params if p.requires_grad)
+            total_all += n_all; total_train += n_train
+            print(f"{key:<20} {n_all:>12,} {n_train:>12,} {n_train/n_all*100:>7.2f}%")
+        print("-" * 60)
+        print(f"{'Total':<20} {total_all:>12,} {total_train:>12,} {total_train/total_all*100:>7.2f}%")
+        print(f"{'='*60}\n")
+        return total_all, total_train
+
     def forward_train(self, batched_input, multimask_output, image_size, scatrgb, scatonehot, pauliscat):
         # input_images = self.preprocess(batched_input)
-        for n, value in self.image_encoder.named_parameters():
-            if "Adapter" not in n and "prompt" not in n and "Prompt" not in n:
-                value.requires_grad = False
+        # for n, value in self.image_encoder.named_parameters():
+        #     if "Adapter" not in n and "prompt" not in n and "Prompt" not in n:
+        #         value.requires_grad = False
+
+        # # Group B: Full Fine-tuning (全参微调)
+        # for n, value in self.image_encoder.named_parameters():
+        #     value.requires_grad = True  # 将所有参数的梯度全部打开
+
+    #    # Group C: 微调后 1/2 (解冻 blocks 6~11, neck, 以及 prompt)
+    #     for n, value in self.image_encoder.named_parameters():
+    #         # 检查是否属于后半部分 blocks (6到11)
+    #         is_last_half = any(f"blocks.{i}." in n for i in range(6, 12))
+    #         if is_last_half or "neck" in n or "prompt" in n or "Prompt" in n:
+    #             value.requires_grad = True
+    #         else:
+    #             value.requires_grad = False
+
+        # # Group D: 微调后 1/4 (解冻 blocks 9~11, neck, 以及 prompt)
+        # for n, value in self.image_encoder.named_parameters():
+        #     # 检查是否属于最后 1/4 blocks (9到11)
+        #     is_last_quarter = any(f"blocks.{i}." in n for i in range(9, 12))
+        #     if is_last_quarter or "neck" in n or "prompt" in n or "Prompt" in n:
+        #         value.requires_grad = True
+        #     else:
+        #         value.requires_grad = False
+
+        # # Group E: 微调后 3/4 (解冻 blocks 3~11, neck, 以及 prompt)
+        # for n, value in self.image_encoder.named_parameters():
+        #     # 检查是否属于最后 3/4 blocks (3到11)
+        #     is_last_quarter = any(f"blocks.{i}." in n for i in range(3, 12))
+        #     if is_last_quarter or "neck" in n or "prompt" in n or "Prompt" in n:
+        #         value.requires_grad = True
+        #     else:
+        #         value.requires_grad = False
+
         image_embeddings = self.image_encoder(batched_input, scatrgb, pauliscat)  # bs3
 
         CNN_scat = self.CNN_encoder(scatonehot)  # conv + pooling
